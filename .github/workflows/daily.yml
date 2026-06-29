@@ -1,0 +1,3 @@
+name: Daily
+on:
+  workflow_dispatch:
