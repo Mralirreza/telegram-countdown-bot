@@ -1,13 +1,3 @@
-import os
-import requests
-from dotenv import load_dotenv
-from services.countdown import get_remaining_days
-
-load_dotenv()
-
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
-
 def send_message():
     days = get_remaining_days()
 
@@ -20,7 +10,7 @@ def send_message():
         "text": text
     }
 
-    requests.post(url, data=payload)
+    response = requests.post(url, data=payload)
 
-if __name__ == "__main__":
-    send_message()
+    print("STATUS CODE:", response.status_code)
+    print("RESPONSE:", response.text)
