@@ -1,88 +1,48 @@
 import os
 import requests
-import random
 from dotenv import load_dotenv
+from openai import OpenAI
 from services.countdown import get_remaining_days
 
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-# 🧠 "AI STYLE ENGINE"
-def ai_generate_message(days: int) -> str:
+def generate_ai_message(days: int) -> str:
+    prompt = f"""
+You are a motivational countdown assistant.
 
-    tones = [
-        "casual",
-        "motivational",
-        "dramatic",
-        "minimal",
-        "friendly"
-    ]
+We have {days} days left until a deadline (1 Mehr 1405).
 
-    tone = random.choice(tones)
+Generate a SHORT, natural, human-like Telegram message in Persian.
 
-    # 🔥 Context understanding layer
-    if days <= 5:
-        context = "critical_final_stage"
-    elif days <= 15:
-        context = "urgent_stage"
-    elif days <= 30:
-        context = "active_stage"
-    else:
-        context = "early_stage"
+Rules:
+- max 2 sentences
+- emotional but not too long
+- vary tone each time
+- do NOT repeat previous styles
+"""
 
-    # 🧠 AI-like generation logic
-    if context == "critical_final_stage":
-        base = [
-            f"😱 فقط {days} روز مونده... همه‌چیز داره تموم میشه!",
-            f"🚨 لحظه‌های آخره... {days} روز باقی مونده!",
-            f"🔥 نزدیک‌ترین حالت ممکن... {days} روز!"
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
         ]
+    )
 
-    elif context == "urgent_stage":
-        base = [
-            f"⚠️ داریم نزدیک می‌شیم... {days} روز مونده",
-            f"⏳ زمان داره جدی میشه... فقط {days} روز",
-            f"🎯 تقریباً رسیدیم... {days} روز باقی مونده"
-        ]
-
-    elif context == "active_stage":
-        base = [
-            f"🚀 مسیر ادامه داره... {days} روز تا هدف",
-            f"📅 هنوز در حرکتیم... {days} روز باقی مونده",
-            f"🔥 پیشرفت ادامه داره ({days} روز)"
-        ]
-
-    else:
-        base = [
-            f"🌱 مسیر تازه شروع شده... {days} روز باقی مونده",
-            f"⏳ هنوز زمان داریم... {days} روز تا هدف",
-            f"📊 فعلاً در فاز اولیه هستیم ({days} روز)"
-        ]
-
-    message = random.choice(base)
-
-    # 🎭 tone enhancer (AI-like personality layer)
-    if tone == "motivational":
-        message += " 💪 ادامه بده!"
-    elif tone == "dramatic":
-        message += " 😳"
-    elif tone == "friendly":
-        message += " 😊"
-    elif tone == "minimal":
-        message = f"{days} روز باقی مانده"
-    else:
-        message += ""
-
-    return message
+    return response.choices[0].message.content
 
 
 def send_message():
     days = get_remaining_days()
 
-    text = ai_generate_message(days)
+    text = generate_ai_message(days)
 
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
@@ -93,7 +53,7 @@ def send_message():
 
     response = requests.post(url, data=payload)
 
-    print("STATUS CODE:", response.status_code)
+    print("STATUS:", response.status_code)
     print("RESPONSE:", response.text)
 
 
