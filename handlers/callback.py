@@ -6,11 +6,6 @@ from services.ai import generate_ai_message
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()
-
-    if query.data == "countdown":
-        days = get_remaining_days()
-
-        text = generate_ai_message(days, context="callback")
-
-        await query.edit_message_text(text)
+    await query.edit_message_text(
+    f"⏳ تا ۱ مهر ۱۴۰۵\n\n{days} روز باقی مانده است."
+)
